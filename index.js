@@ -24,7 +24,18 @@ const db = require('./db/connection');
 
     // May need to JOIN tables to get additional information
 async function viewAllEmployees() {
-    const employees = await db.query(`SELECT * FROM employee`)
+    const employees = await db.query(`SELECT e.id, 
+    e.first_name, 
+    e.last_name, 
+    r.title, 
+    d.name,
+    r.salary, 
+    concat(m.first_name,' ', m.last_name) AS manager
+    FROM employee e
+    JOIN role r ON r.id = e.role_id
+    JOIN department d ON d.id = r.department_id
+    LEFT JOIN employee m ON m.id = e.manager_id
+    ORDER BY id ASC;`)
 
     console.table(employees)
 }
