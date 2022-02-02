@@ -17,13 +17,12 @@ async function inquire () {
                 message: "What would you like to do?",
                 choices:  [
                     { name: "View All Employees", value: viewAllEmployees},
-                    { name: "Add Employee", value: 1},
+                    { name: "Add Employee", value: createEmployee},
                     { name: "Update Employee Role", value: 1},
                     { name: "View All Roles", value: viewAllRoles},
-                    { name: "Add Role", value: 2},
+                    { name: "Add Role", value: createRole},
                     { name: "View All Departments", value: viewAllDepartments},
-                    { name: "Add Departments", value: createDepartment},
-                    { name: "View All Departments", value: 3},
+                    { name: "Add Department", value: createDepartment},
                     { name: "Quit", value: 3},
                 ]
 
@@ -31,10 +30,9 @@ async function inquire () {
     ])
     .then((answers) => {
         answers.action()
-        
     })
+};
 
-}
 // view all departments - READ - `SELECT * FROM [table_name]`
     // May need to JOIN tables to get additional information
 async function viewAllDepartments() {
@@ -46,9 +44,8 @@ async function viewAllDepartments() {
     inquire()
 };
 
-// viewAllDepartments()
-// view all roles - READ - `SELECT * FROM [table_name]`
 
+// May need to JOIN tables to get additional information
 async function viewAllRoles() {
     const roles = await db.query(`SELECT r.id,
     r.title,
@@ -62,12 +59,9 @@ async function viewAllRoles() {
     console.table(roles)
     inquire()
 };
-    // May need to JOIN tables to get additional information
-// viewAllRoles()
 
 
 // view all Employees - READ - `SELECT * FROM [table_name]`
-
     // May need to JOIN tables to get additional information
 async function viewAllEmployees() {
     const employees = await db.query(`SELECT e.id, 
@@ -87,9 +81,6 @@ async function viewAllEmployees() {
     inquire()
 }
 
-// viewAllEmployees();
-
-
 // add a department - CREATE - INSERT INTO [table_name] ("column_names") VALUES ("values")
 async function createDepartment() {
     const answers = await inquirer
@@ -106,14 +97,13 @@ async function createDepartment() {
         db.query(`INSERT INTO department (name)
         VALUES (?)`, answers.name, (err, result) => {
             if (err) {
-            res.status(400).json({ error: err.message });
-            return;
+                console.log(err);
             }
             console.log('Added', answers.name, 'to the database.')
             inquire()
             });
     })
-}
+};
 
 
 // add a role - CREATE
@@ -131,30 +121,102 @@ async function createRole() {
             }
         })
 
-        console.log(choices)
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
     .prompt([
         {
+            type:"input",
+            name:"title",
+            message: "What is the name of the role?",
+        },
+        {
+            type:"input",
+            name:"salary",
+            message: "What is the salary of the role?",
+        },
+        {
             type:"list",
             name:"department_id",
             message: "Choose a department",
-            choices: choices /*[
-                { name: "Sales", value: 1},
-                { name: "Accounting", value: 2},
-                { name: "Development", value: 3},
-            ]*/
-
+            choices: choices 
         }
     ])
     .then((answers) => {
-        console.log(answers);
+        const { title, salary, department_id } = answers
+        console.log(title);
+        console.log(salary);
+        console.log(department_id);
+
+        db.query(`INSERT INTO role (title, salary, department_id)
+        VALUES (?, ?, ?)`, [title, salary, department_id], (err, result) => {
+            if (err) {
+                console.log(err);
+              }
+            console.log('Added', title, 'to the database.')
+            inquire()
+            });
     })
+};
 
-     // THEN prompt the user for role information (inquirer)
+// add an employee - CREATE
+// add a role - CREATE
+async function createEmployee() {
 
-        // THEN take inquirer prompt data and INSERT them into the `role` table
-}
+    // // SELECT the existing departments out of the `departments` table
+    //     const departments = await db.query(`SELECT * 
+    //     FROM department 
+    //     ORDER BY name ASC`)
+    // // Returns an Array list of department like objects
+    //     const choices = departments.map( department => {
+    //         return {
+    //             name: department.name,
+    //             value: department.id
+    //         }
+    //     })
+
+    //     console.log(choices)
+    // // .map() the results from `departments` to question data for inquirer
+    // const answers = await inquirer
+    // .prompt([
+    //     {
+    //         type:"input",
+    //         name:"title",
+    //         message: "What is the name of the role?",
+    //     },
+    //     {
+    //         type:"input",
+    //         name:"salary",
+    //         message: "What is the salary of the role?",
+    //     },
+    //     {
+    //         type:"list",
+    //         name:"department_id",
+    //         message: "Choose a department",
+    //         choices: choices 
+    //     }
+    // ])
+    // .then((answers) => {
+    //     const { title, salary, department_id } = answers
+    //     console.log(title);
+    //     console.log(salary);
+    //     console.log(department_id);
+
+    //     db.query(`INSERT INTO role (title, salary, department_id)
+    //     VALUES (?, ?, ?)`, [title, salary, department_id], (err, result) => {
+    //         if (err) {
+    //             console.log(err);
+    //           }
+    //         console.log('Added', title, 'to the database.')
+    //         inquire()
+    //         });
+    // })
+};
+
+
+// update an employee
+
+inquire()
+
 
 // Write out static SQL query, and then swap in the question marks? to build them into our prompts ()
 
@@ -187,13 +249,3 @@ connection.execute(
     // which will save query preparation time and give better performance
   }
 ); */
-
-   
-
-// add an employee - CREATE
-
-
-
-// update an employee
-
-inquire()
