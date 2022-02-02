@@ -16,7 +16,7 @@ connection.connect(function(err) {
     if (err) {
         throw err
     } else {
-        console.log('Successfully connected to mysql')
+        // console.log('Successfully connected to mysql')
     };
 });
 

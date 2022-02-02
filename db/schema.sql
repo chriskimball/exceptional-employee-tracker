@@ -41,7 +41,13 @@ CREATE TABLE employee (
 -- LEFT JOIN employee m ON m.id = e.manager_id
 -- ORDER BY id ASC;
 
-
+SELECT r.id,
+r.title,
+d.name,
+r.salary
+FROM role r
+JOIN department d ON r.department_id = d.id
+ORDER BY id asc;
 
 -- SELECT * FROM [course_names] (left table)
 

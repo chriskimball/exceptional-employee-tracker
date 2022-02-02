@@ -8,16 +8,62 @@ const db = require('./db/connection');
 // console.log(logo(config).render());
 
 // Present User with Options
+async function inquire () {
+    const answers = await inquirer
+        .prompt([
+            {
+                type:"list",
+                name:"action",
+                message: "What would you like to do?",
+                choices:  [
+                    { name: "View All Employees", value: viewAllEmployees},
+                    { name: "Add Employee", value: 1},
+                    { name: "Update Employee Role", value: 1},
+                    { name: "View All Roles", value: viewAllRoles},
+                    { name: "Add Role", value: 2},
+                    { name: "View All Departments", value: viewAllDepartments},
+                    { name: "Add Departments", value: createDepartment},
+                    { name: "View All Departments", value: 3},
+                    { name: "Quit", value: 3},
+                ]
 
+            }
+    ])
+    .then((answers) => {
+        answers.action()
+        
+    })
+
+}
 // view all departments - READ - `SELECT * FROM [table_name]`
     // May need to JOIN tables to get additional information
+async function viewAllDepartments() {
+    const departments = await db.query(`SELECT * 
+    FROM department 
+    ORDER BY name ASC`)
 
+    console.table(departments)
+    inquire()
+};
 
-
+// viewAllDepartments()
 // view all roles - READ - `SELECT * FROM [table_name]`
 
-    // May need to JOIN tables to get additional information
+async function viewAllRoles() {
+    const roles = await db.query(`SELECT r.id,
+    r.title,
+    d.name,
+    r.salary
+    FROM role r
+    JOIN department d ON r.department_id = d.id
+    ORDER BY id asc;
+    `)
 
+    console.table(roles)
+    inquire()
+};
+    // May need to JOIN tables to get additional information
+// viewAllRoles()
 
 
 // view all Employees - READ - `SELECT * FROM [table_name]`
@@ -38,29 +84,45 @@ async function viewAllEmployees() {
     ORDER BY id ASC;`)
 
     console.table(employees)
+    inquire()
 }
 
-viewAllEmployees();
+// viewAllEmployees();
 
 
 // add a department - CREATE - INSERT INTO [table_name] ("column_names") VALUES ("values")
-
+async function createDepartment() {
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"input",
+            name:"name",
+            message: "What is the name of the department?",
+        
+        }
+    ])
+    .then((answers) => {
+        
+        db.query(`INSERT INTO department (name)
+        VALUES (?)`, answers.name, (err, result) => {
+            if (err) {
+            res.status(400).json({ error: err.message });
+            return;
+            }
+            console.log('Added', answers.name, 'to the database.')
+            inquire()
+            });
+    })
+}
 
 
 // add a role - CREATE
 async function createRole() {
 
     // SELECT the existing departments out of the `departments` table
-        const departments = [
-            {
-                id: 1,
-                name: "Sales"
-            },
-            {
-                id: 2,
-                name: "Accounting"
-            },
-        ]
+        const departments = await db.query(`SELECT * 
+        FROM department 
+        ORDER BY name ASC`)
     // Returns an Array list of department like objects
         const choices = departments.map( department => {
             return {
@@ -68,6 +130,8 @@ async function createRole() {
                 value: department.id
             }
         })
+
+        console.log(choices)
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
     .prompt([
@@ -131,3 +195,5 @@ connection.execute(
 
 
 // update an employee
+
+inquire()
