@@ -19,11 +19,12 @@ async function inquire () {
                     { name: "View All Employees", value: viewAllEmployees},
                     { name: "Add Employee", value: createEmployee},
                     { name: "Update Employee Role", value: updateEmployeeRole},
+                    { name: "Update Employee's Manager", value: updateEmployeeManager},
                     { name: "View All Roles", value: viewAllRoles},
                     { name: "Add Role", value: createRole},
                     { name: "View All Departments", value: viewAllDepartments},
                     { name: "Add Department", value: createDepartment},
-                    { name: "Quit", value: 3},
+                    { name: "Quit", value: quit},
                 ]
 
             }
@@ -38,7 +39,7 @@ async function inquire () {
 async function viewAllDepartments() {
     const departments = await db.query(`SELECT * 
     FROM department 
-    ORDER BY name ASC`)
+    ORDER BY name ASC;`)
 
     console.table(departments)
     inquire()
@@ -95,7 +96,7 @@ async function createDepartment() {
     .then((answers) => {
         
         db.query(`INSERT INTO department (name)
-        VALUES (?)`, answers.name, (err, result) => {
+        VALUES (?);`, answers.name, (err, result) => {
             if (err) {
                 console.log(err);
             }
@@ -111,7 +112,7 @@ async function createRole() {
 
     // SELECT the existing departments out of the `departments` table
         const departments = await db.query(`SELECT * 
-        FROM department`)
+        FROM department;`)
     // Returns an Array list of department like objects
         const choices = departments.map( department => {
             return {
@@ -144,7 +145,7 @@ async function createRole() {
         const { title, salary, department_id } = answers
 
         db.query(`INSERT INTO role (title, salary, department_id)
-        VALUES (?, ?, ?)`, [title, salary, department_id], (err, result) => {
+        VALUES (?, ?, ?);`, [title, salary, department_id], (err, result) => {
             if (err) {
                 console.log(err);
               }
@@ -160,7 +161,7 @@ async function createEmployee() {
 
     // SELECT the existing departments out of the `departments` table
         const roles = await db.query(`SELECT * 
-        FROM role`)
+        FROM role;`)
     // Returns an Array list of department like objects
         const roleChoices = roles.map( role => {
             return {
@@ -171,7 +172,7 @@ async function createEmployee() {
 
         const managers = await db.query(`SELECT * 
         FROM employee 
-        WHERE manager_id IS NULL`)
+        WHERE manager_id IS NULL;`)
     // Returns an Array list of department like objects
         const managerChoices = managers.map( manager => {
             return {
@@ -211,7 +212,7 @@ async function createEmployee() {
             const { first_name, last_name, role_id, manager_id } = answers
             
             db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
-            VALUES (?, ?, ?, ?)`, [first_name, last_name, role_id, manager_id], (err, result) => {
+            VALUES (?, ?, ?, ?);`, [first_name, last_name, role_id, manager_id], (err, result) => {
                 if (err) {
                     console.log(err);
                 }
@@ -224,8 +225,126 @@ async function createEmployee() {
 
 // update an employee
 async function updateEmployeeRole() {
+    const employees = await db.query(`SELECT * 
+        FROM employee;`)
+    // Returns an Array list of department like objects
+        const employeeChoices = employees.map( employee => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id
+            }
+        })
+
+        const roles = await db.query(`SELECT * 
+        FROM role;`)
+    // Returns an Array list of department like objects
+        const roleChoices = roles.map( role => {
+            return {
+                name: role.title,
+                value: role.id
+            }
+        })
+
+        const answers = await inquirer
+        .prompt([
+            {
+                type:"list",
+                name:"employee_id",
+                message: "Which employee's role would you like to update?",
+                choices: employeeChoices 
+            },
+            {
+                type:"list",
+                name:"role_id",
+                message: "Which role do you want to assign to the selected employee?",
+                choices: roleChoices 
+            }
+        ])
+        .then((answers) => {
+            const { employee_id, role_id } = answers
+            
+            db.query(`UPDATE employee 
+            SET role_id = ? 
+            WHERE id = ?;`, [ role_id, employee_id], (err, result) => {
+                if (err) {
+                    console.log(err);
+                }
+                console.log(`Updated employee's role.`)
+                inquire()
+                });
+        });
 
 }
+
+// Update employee managers.
+
+async function updateEmployeeManager() {
+    const employees = await db.query(`SELECT * 
+        FROM employee;`)
+    // Returns an Array list of department like objects
+        const employeeChoices = employees.map( employee => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id
+            }
+        })
+
+        const managers = await db.query(`SELECT * 
+        FROM employee 
+        WHERE manager_id IS NULL;`)
+    // Returns an Array list of department like objects
+        const managerChoices = managers.map( manager => {
+            return {
+                name: manager.first_name + ' ' + manager.last_name,
+                value: manager.id
+            }
+        })
+        managerChoices.unshift({name:'None', value: null})
+
+        const answers = await inquirer
+        .prompt([
+            {
+                type:"list",
+                name:"employee_id",
+                message: "Which employee's manager would you like to update?",
+                choices: employeeChoices 
+            },
+            {
+                type:"list",
+                name:"manager_id",
+                message: "Which manager do you want to assign to the selected employee?",
+                choices: managerChoices 
+            }
+        ])
+        .then((answers) => {
+            const { employee_id, manager_id } = answers
+            
+            db.query(`UPDATE employee 
+            SET manager_id = ? 
+            WHERE id = ?;`, [ manager_id, employee_id], (err, result) => {
+                if (err) {
+                    console.log(err);
+                }
+                console.log(`Updated employee's manager.`)
+                inquire()
+                });
+        });
+
+};
+
+// View employees by manager.
+
+// View employees by department.
+
+
+// Delete departments, roles, and employees.
+
+
+// View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
+
+
+
+const quit = () => process.exit(1);
 
 inquire()
 

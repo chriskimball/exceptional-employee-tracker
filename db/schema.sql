@@ -52,3 +52,8 @@ CREATE TABLE employee (
 -- SELECT * FROM [course_names] (left table)
 
 -- JOIN department ON course_names.department = department.id
+
+
+-- UPDATE employee
+-- SET role_id = ?
+-- WHERE id = ?;
