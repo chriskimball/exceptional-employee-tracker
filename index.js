@@ -425,7 +425,58 @@ async function viewEmployeesByDepartment() {
 
 // // Delete departments, roles, and employees.
 async function deleteDepartment() {
+    let deleted_department_id
+    const departments = await db.query(`SELECT * 
+    FROM department;`)
+    // Returns an Array list of department like objects
+    const departmentChoices = departments.map( department => {
+        return {
+            name: department.name,
+            value: department.id
+        }
+    })
 
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"deleted_department_id",
+            message: "Which department do you want to delete?",
+            choices: departmentChoices 
+        }
+    ]).then((answers) => {
+        deleted_department_id  = answers.deleted_department_id
+        const indexOfObject = departmentChoices.findIndex(object => {
+            return object.value === deleted_department_id;
+        });
+          
+        if (indexOfObject > -1) departmentChoices.splice(indexOfObject, 1); 
+    })
+    const newAnswers = await inquirer.prompt([
+        {
+            type:"list",
+            name:"department_id",
+            message: "Which deparment should roles in the deleted department be reassigned to?",
+            choices: departmentChoices 
+    }]).then((newAnswers) => {
+        const {department_id} = newAnswers;
+        db.query(`UPDATE role 
+        SET department_id = ? 
+        WHERE department_id = ?;`, [ department_id, deleted_department_id], (err, result) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(`Reassigned roles to their new department.`)
+            })
+        db.query(`DELETE FROM department
+        WHERE id = ?;`, [ deleted_department_id], (err, result) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(`Deleted department.`)
+            inquire()
+            });
+    })
 };
 
 async function deleteRole() {
@@ -439,7 +490,7 @@ async function deleteRole() {
             value: role.id
         }
     })
-    console.log(roleChoices)
+
     const answers = await inquirer
     .prompt([
         {
@@ -464,8 +515,7 @@ async function deleteRole() {
             choices: roleChoices 
     }]).then((newAnswers) => {
         const {role_id} = newAnswers;
-        console.log(deleted_role_id)
-        console.log(role_id)
+
         db.query(`UPDATE employee 
         SET role_id = ? 
         WHERE role_id = ?;`, [ role_id, deleted_role_id], (err, result) => {
