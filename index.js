@@ -1,7 +1,8 @@
 // Required modules
-const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const db = require('./db/connection');
+const { getRoleChoices, getManagerChoices, getDepartmentChoices, getEmployeeChoices} = require('./helpers/choices');
+
 
 // const logo = require('asciiart-logo');
 // const config = require('./package.json');
@@ -117,15 +118,7 @@ async function createDepartment() {
 async function createRole() {
 
     // SELECT the existing departments out of the `departments` table
-    const departments = await db.query(`SELECT * 
-    FROM department;`)
-    // Returns an Array list of department like objects
-    const departmentChoices = departments.map( department => {
-        return {
-            name: department.name,
-            value: department.id
-        }
-    })
+    const departmentChoices = await getDepartmentChoices();
 
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
@@ -166,27 +159,11 @@ async function createRole() {
 async function createEmployee() {
 
     // SELECT the existing departments out of the `departments` table
-    const roles = await db.query(`SELECT * 
-    FROM role;`)
-    // Returns an Array list of department like objects
-    const roleChoices = roles.map( role => {
-        return {
-            name: role.title,
-            value: role.id
-        }
-    })
+    const roleChoices = await getRoleChoices();
+    
+    const managerChoices = await getManagerChoices();
 
-    const managers = await db.query(`SELECT * 
-    FROM employee 
-    WHERE manager_id IS NULL;`)
-    // Returns an Array list of department like objects
-    const managerChoices = managers.map( manager => {
-        return {
-            name: manager.first_name + ' ' + manager.last_name,
-            value: manager.id
-        }
-    })
-    managerChoices.unshift({name:'None', value: null})
+    managerChoices.unshift({name:'None', value: null});
 
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
@@ -231,25 +208,9 @@ async function createEmployee() {
 
 // update an employee
 async function updateEmployeeRole() {
-    const employees = await db.query(`SELECT * 
-    FROM employee;`)
-// Returns an Array list of department like objects
-    const employeeChoices = employees.map( employee => {
-        return {
-            name: `${employee.first_name} ${employee.last_name}`,
-            value: employee.id
-        }
-    })
+    const employeeChoices = await getEmployeeChoices();
 
-    const roles = await db.query(`SELECT * 
-    FROM role;`)
-// Returns an Array list of department like objects
-    const roleChoices = roles.map( role => {
-        return {
-            name: role.title,
-            value: role.id
-        }
-    })
+    const roleChoices = await getRoleChoices();
 
     const answers = await inquirer
     .prompt([
@@ -285,26 +246,9 @@ async function updateEmployeeRole() {
 // Update employee managers.
 
 async function updateEmployeeManager() {
-    const employees = await db.query(`SELECT * 
-        FROM employee;`)
-    // Returns an Array list of department like objects
-    const employeeChoices = employees.map( employee => {
-        return {
-            name: `${employee.first_name} ${employee.last_name}`,
-            value: employee.id
-        }
-    })
+    const employeeChoices = await getEmployeeChoices();
 
-    const managers = await db.query(`SELECT * 
-    FROM employee 
-    WHERE manager_id IS NULL;`)
-    // Returns an Array list of department like objects
-    const managerChoices = managers.map( manager => {
-        return {
-            name: manager.first_name + ' ' + manager.last_name,
-            value: manager.id
-        }
-    })
+    const managerChoices = await getManagerChoices()
     managerChoices.unshift({name:'None', value: null})
 
     const answers = await inquirer
@@ -384,15 +328,7 @@ async function viewEmployeesByManager() {
 
 // // View employees by department.
 async function viewEmployeesByDepartment() {
-    const departments = await db.query(`SELECT * 
-    FROM department;`)
-    // Returns an Array list of department like objects
-    const departmentChoices = departments.map( department => {
-        return {
-            name: department.name,
-            value: department.id
-        }
-    })
+    const departmentChoices = await getDepartmentChoices();
 
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
@@ -426,15 +362,7 @@ async function viewEmployeesByDepartment() {
 // // Delete departments, roles, and employees.
 async function deleteDepartment() {
     let deleted_department_id
-    const departments = await db.query(`SELECT * 
-    FROM department;`)
-    // Returns an Array list of department like objects
-    const departmentChoices = departments.map( department => {
-        return {
-            name: department.name,
-            value: department.id
-        }
-    })
+    const departmentChoices = await getDepartmentChoices();
 
     const answers = await inquirer
     .prompt([
@@ -481,15 +409,7 @@ async function deleteDepartment() {
 
 async function deleteRole() {
     let deleted_role_id
-    const roles = await db.query(`SELECT * 
-    FROM role;`)
-// Returns an Array list of department like objects
-    const roleChoices = roles.map( role => {
-        return {
-            name: role.title,
-            value: role.id
-        }
-    })
+    const roleChoices = await getRoleChoices();
 
     const answers = await inquirer
     .prompt([
@@ -543,15 +463,7 @@ async function deleteRole() {
 };
 
 async function deleteEmployee() {
-    const employees = await db.query(`SELECT * 
-        FROM employee;`)
-    // Returns an Array list of department like objects
-    const employeeChoices = employees.map( employee => {
-        return {
-            name: `${employee.first_name} ${employee.last_name}`,
-            value: employee.id
-        }
-    });
+    const employeeChoices = await getEmployeeChoices();
 
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
@@ -580,15 +492,7 @@ async function deleteEmployee() {
 // // View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
 async function viewDepartmentBudget() {
 
-    const departments = await db.query(`SELECT * 
-    FROM department;`)
-    // Returns an Array list of department like objects
-    const departmentChoices = departments.map( department => {
-        return {
-            name: department.name,
-            value: department.id
-        }
-    })
+    const departmentChoices = await getDepartmentChoices();
 
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
