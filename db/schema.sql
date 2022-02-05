@@ -26,34 +26,5 @@ CREATE TABLE employee (
     manager_id INT,
     FOREIGN KEY (role_id) REFERENCES role(id),
     FOREIGN KEY (manager_id) REFERENCES employee(id)
+    ON DELETE SET NULL
 );
-
--- SELECT e.id, 
--- e.first_name, 
--- e.last_name, 
--- r.title, 
--- d.name,
--- r.salary, 
--- concat(m.first_name,' ', m.last_name) AS manager
--- FROM employee e
--- JOIN role r ON r.id = e.role_id
--- JOIN department d ON d.id = r.department_id
--- LEFT JOIN employee m ON m.id = e.manager_id
--- ORDER BY id ASC;
-
--- SELECT r.id,
--- r.title,
--- d.name,
--- r.salary
--- FROM role r
--- JOIN department d ON r.department_id = d.id
--- ORDER BY id asc;
-
--- SELECT * FROM [course_names] (left table)
-
--- JOIN department ON course_names.department = department.id
-
-
--- UPDATE employee
--- SET role_id = ?
--- WHERE id = ?;

@@ -120,7 +120,7 @@ async function createRole() {
     const departments = await db.query(`SELECT * 
     FROM department;`)
     // Returns an Array list of department like objects
-    const choices = departments.map( department => {
+    const departmentChoices = departments.map( department => {
         return {
             name: department.name,
             value: department.id
@@ -144,7 +144,7 @@ async function createRole() {
             type:"list",
             name:"department_id",
             message: "Choose a department",
-            choices: choices 
+            choices: departmentChoices 
         }
     ])
     .then((answers) => {
