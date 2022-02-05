@@ -17,13 +17,19 @@ async function inquire () {
                 message: "What would you like to do?",
                 choices:  [
                     { name: "View All Employees", value: viewAllEmployees},
+                    { name: "View Employees By Manager", value: viewEmployeesByManager},
+                    { name: "View Employees By Department", value: viewEmployeesByDepartment},
                     { name: "Add Employee", value: createEmployee},
+                    { name: "Delete Employee", value: deleteEmployee},
                     { name: "Update Employee Role", value: updateEmployeeRole},
                     { name: "Update Employee's Manager", value: updateEmployeeManager},
                     { name: "View All Roles", value: viewAllRoles},
                     { name: "Add Role", value: createRole},
+                    { name: "Delete Role", value: deleteRole},
                     { name: "View All Departments", value: viewAllDepartments},
+                    { name: "View Department Budget", value: viewDepartmentBudget},
                     { name: "Add Department", value: createDepartment},
+                    { name: "Delete Department", value: deleteDepartment},
                     { name: "Quit", value: quit},
                 ]
 
@@ -111,15 +117,15 @@ async function createDepartment() {
 async function createRole() {
 
     // SELECT the existing departments out of the `departments` table
-        const departments = await db.query(`SELECT * 
-        FROM department;`)
+    const departments = await db.query(`SELECT * 
+    FROM department;`)
     // Returns an Array list of department like objects
-        const choices = departments.map( department => {
-            return {
-                name: department.name,
-                value: department.id
-            }
-        })
+    const choices = departments.map( department => {
+        return {
+            name: department.name,
+            value: department.id
+        }
+    })
 
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
@@ -160,27 +166,27 @@ async function createRole() {
 async function createEmployee() {
 
     // SELECT the existing departments out of the `departments` table
-        const roles = await db.query(`SELECT * 
-        FROM role;`)
+    const roles = await db.query(`SELECT * 
+    FROM role;`)
     // Returns an Array list of department like objects
-        const roleChoices = roles.map( role => {
-            return {
-                name: role.title,
-                value: role.id
-            }
-        })
+    const roleChoices = roles.map( role => {
+        return {
+            name: role.title,
+            value: role.id
+        }
+    })
 
-        const managers = await db.query(`SELECT * 
-        FROM employee 
-        WHERE manager_id IS NULL;`)
+    const managers = await db.query(`SELECT * 
+    FROM employee 
+    WHERE manager_id IS NULL;`)
     // Returns an Array list of department like objects
-        const managerChoices = managers.map( manager => {
-            return {
-                name: manager.first_name + ' ' + manager.last_name,
-                value: manager.id
-            }
-        })
-        managerChoices.unshift({name:'None', value: null})
+    const managerChoices = managers.map( manager => {
+        return {
+            name: manager.first_name + ' ' + manager.last_name,
+            value: manager.id
+        }
+    })
+    managerChoices.unshift({name:'None', value: null})
 
     // .map() the results from `departments` to question data for inquirer
     const answers = await inquirer
@@ -208,71 +214,71 @@ async function createEmployee() {
                 choices: managerChoices 
             }
         ])
-        .then((answers) => {
-            const { first_name, last_name, role_id, manager_id } = answers
-            
-            db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
-            VALUES (?, ?, ?, ?);`, [first_name, last_name, role_id, manager_id], (err, result) => {
-                if (err) {
-                    console.log(err);
-                }
-                console.log(`Added ${first_name} ${last_name} to the database.`)
-                inquire()
-                });
-        });
+    .then((answers) => {
+        const { first_name, last_name, role_id, manager_id } = answers
+        
+        db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
+        VALUES (?, ?, ?, ?);`, [first_name, last_name, role_id, manager_id], (err, result) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(`Added ${first_name} ${last_name} to the database.`)
+            inquire()
+            });
+    });
 };
 
 
 // update an employee
 async function updateEmployeeRole() {
     const employees = await db.query(`SELECT * 
-        FROM employee;`)
-    // Returns an Array list of department like objects
-        const employeeChoices = employees.map( employee => {
-            return {
-                name: `${employee.first_name} ${employee.last_name}`,
-                value: employee.id
-            }
-        })
+    FROM employee;`)
+// Returns an Array list of department like objects
+    const employeeChoices = employees.map( employee => {
+        return {
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id
+        }
+    })
 
-        const roles = await db.query(`SELECT * 
-        FROM role;`)
-    // Returns an Array list of department like objects
-        const roleChoices = roles.map( role => {
-            return {
-                name: role.title,
-                value: role.id
-            }
-        })
+    const roles = await db.query(`SELECT * 
+    FROM role;`)
+// Returns an Array list of department like objects
+    const roleChoices = roles.map( role => {
+        return {
+            name: role.title,
+            value: role.id
+        }
+    })
 
-        const answers = await inquirer
-        .prompt([
-            {
-                type:"list",
-                name:"employee_id",
-                message: "Which employee's role would you like to update?",
-                choices: employeeChoices 
-            },
-            {
-                type:"list",
-                name:"role_id",
-                message: "Which role do you want to assign to the selected employee?",
-                choices: roleChoices 
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"employee_id",
+            message: "Which employee's role would you like to update?",
+            choices: employeeChoices 
+        },
+        {
+            type:"list",
+            name:"role_id",
+            message: "Which role do you want to assign to the selected employee?",
+            choices: roleChoices 
+        }
+    ])
+    .then((answers) => {
+        const { employee_id, role_id } = answers
+        
+        db.query(`UPDATE employee 
+        SET role_id = ? 
+        WHERE id = ?;`, [ role_id, employee_id], (err, result) => {
+            if (err) {
+                console.log(err);
             }
-        ])
-        .then((answers) => {
-            const { employee_id, role_id } = answers
-            
-            db.query(`UPDATE employee 
-            SET role_id = ? 
-            WHERE id = ?;`, [ role_id, employee_id], (err, result) => {
-                if (err) {
-                    console.log(err);
-                }
-                console.log(`Updated employee's role.`)
-                inquire()
-                });
-        });
+            console.log(`Updated employee's role.`)
+            inquire()
+            });
+    });
 
 }
 
@@ -282,101 +288,288 @@ async function updateEmployeeManager() {
     const employees = await db.query(`SELECT * 
         FROM employee;`)
     // Returns an Array list of department like objects
-        const employeeChoices = employees.map( employee => {
-            return {
-                name: `${employee.first_name} ${employee.last_name}`,
-                value: employee.id
-            }
-        })
+    const employeeChoices = employees.map( employee => {
+        return {
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id
+        }
+    })
 
-        const managers = await db.query(`SELECT * 
-        FROM employee 
-        WHERE manager_id IS NULL;`)
+    const managers = await db.query(`SELECT * 
+    FROM employee 
+    WHERE manager_id IS NULL;`)
     // Returns an Array list of department like objects
-        const managerChoices = managers.map( manager => {
-            return {
-                name: manager.first_name + ' ' + manager.last_name,
-                value: manager.id
-            }
-        })
-        managerChoices.unshift({name:'None', value: null})
+    const managerChoices = managers.map( manager => {
+        return {
+            name: manager.first_name + ' ' + manager.last_name,
+            value: manager.id
+        }
+    })
+    managerChoices.unshift({name:'None', value: null})
 
-        const answers = await inquirer
-        .prompt([
-            {
-                type:"list",
-                name:"employee_id",
-                message: "Which employee's manager would you like to update?",
-                choices: employeeChoices 
-            },
-            {
-                type:"list",
-                name:"manager_id",
-                message: "Which manager do you want to assign to the selected employee?",
-                choices: managerChoices 
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"employee_id",
+            message: "Which employee's manager would you like to update?",
+            choices: employeeChoices 
+        },
+        {
+            type:"list",
+            name:"manager_id",
+            message: "Which manager do you want to assign to the selected employee?",
+            choices: managerChoices 
+        }
+    ])
+    .then((answers) => {
+        const { employee_id, manager_id } = answers
+        
+        db.query(`UPDATE employee 
+        SET manager_id = ? 
+        WHERE id = ?;`, [ manager_id, employee_id], (err, result) => {
+            if (err) {
+                console.log(err);
             }
-        ])
-        .then((answers) => {
-            const { employee_id, manager_id } = answers
-            
-            db.query(`UPDATE employee 
-            SET manager_id = ? 
-            WHERE id = ?;`, [ manager_id, employee_id], (err, result) => {
-                if (err) {
-                    console.log(err);
-                }
-                console.log(`Updated employee's manager.`)
-                inquire()
-                });
-        });
+            console.log(`Updated employee's manager.`)
+            inquire()
+            });
+    });
 
 };
 
 // View employees by manager.
+async function viewEmployeesByManager() {
+    const managers = await db.query(`SELECT * 
+    FROM employee 
+    WHERE manager_id IS NULL;`)
+    // Returns an Array list of department like objects
+    const managerChoices = managers.map( manager => {
+        return {
+            name: manager.first_name + ' ' + manager.last_name,
+            value: manager.id
+        }
+    })
 
-// View employees by department.
+    // .map() the results from `departments` to question data for inquirer
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"manager_id",
+            message: "Choose a manager",
+            choices: managerChoices 
+        }
+    ])
+    .then((answers) => {
+        const { manager_id } = answers
 
+        db.query(`SELECT e.first_name,
+        e.last_name,
+        r.title,
+        r.salary
+        FROM employee e
+        JOIN role r ON r.id = e.role_id
+        WHERE manager_id = ?;`, [manager_id], (err, result) => {
+            if (err) {
+                console.log(err);
+              }
+            console.table(result)
+            inquire()
+            });
+    })
+    
 
-// Delete departments, roles, and employees.
+};
 
+// // View employees by department.
+async function viewEmployeesByDepartment() {
+    const departments = await db.query(`SELECT * 
+    FROM department;`)
+    // Returns an Array list of department like objects
+    const departmentChoices = departments.map( department => {
+        return {
+            name: department.name,
+            value: department.id
+        }
+    })
 
-// View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
+    // .map() the results from `departments` to question data for inquirer
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"department_id",
+            message: "Choose a department",
+            choices: departmentChoices 
+        }
+    ])
+    .then((answers) => {
+        const { department_id } = answers
 
+        db.query(`SELECT e.first_name,
+        e.last_name,
+        r.title,
+        r.salary
+        FROM employee e
+        JOIN role r ON r.id = e.role_id
+        WHERE department_id = ?;`, [department_id], (err, result) => {
+            if (err) {
+                console.log(err);
+              }
+            console.table(result)
+            inquire()
+            });
+    })
+};
+
+// // Delete departments, roles, and employees.
+async function deleteDepartment() {
+
+};
+
+async function deleteRole() {
+    let deleted_role_id
+    const roles = await db.query(`SELECT * 
+    FROM role;`)
+// Returns an Array list of department like objects
+    const roleChoices = roles.map( role => {
+        return {
+            name: role.title,
+            value: role.id
+        }
+    })
+    console.log(roleChoices)
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"deleted_role_id",
+            message: "Which role do you want to delete?",
+            choices: roleChoices 
+        }
+    ]).then((answers) => {
+        deleted_role_id  = answers.deleted_role_id
+        const indexOfObject = roleChoices.findIndex(object => {
+            return object.value === deleted_role_id;
+        });
+          
+        if (indexOfObject > -1) roleChoices.splice(indexOfObject, 1); 
+    })
+    const newAnswers = await inquirer.prompt([
+        {
+            type:"list",
+            name:"role_id",
+            message: "Which role should employees with the deleted role be reassigned to?",
+            choices: roleChoices 
+    }]).then((newAnswers) => {
+        const {role_id} = newAnswers;
+        console.log(deleted_role_id)
+        console.log(role_id)
+        db.query(`UPDATE employee 
+        SET role_id = ? 
+        WHERE role_id = ?;`, [ role_id, deleted_role_id], (err, result) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(`Updated roles.`)
+            })
+        db.query(`DELETE FROM role
+        WHERE id = ?;`, [ deleted_role_id], (err, result) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(`Deleted role.`)
+            inquire()
+            });
+    })
+    
+    // });
+    //  UPDATE employee 
+    //  SET role_id = ? 
+    //  WHERE role_id = ?;
+    //  DELETE FROM role
+    //  WHERE id = ?
+};
+
+async function deleteEmployee() {
+    const employees = await db.query(`SELECT * 
+        FROM employee;`)
+    // Returns an Array list of department like objects
+    const employeeChoices = employees.map( employee => {
+        return {
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id
+        }
+    });
+
+    // .map() the results from `departments` to question data for inquirer
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"employee_id",
+            message: "Which employee do you want to delete",
+            choices: employeeChoices 
+        }
+    ])
+    .then((answers) => {
+        const { employee_id } = answers
+
+        db.query(`DELETE FROM employee
+        WHERE id = ?;`, [employee_id], (err, result) => {
+            if (err) {
+                console.log(err);
+              }
+            console.log(`Deleted employee.`)
+            inquire()
+            });
+    })
+};
+
+// // View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
+async function viewDepartmentBudget() {
+
+    const departments = await db.query(`SELECT * 
+    FROM department;`)
+    // Returns an Array list of department like objects
+    const departmentChoices = departments.map( department => {
+        return {
+            name: department.name,
+            value: department.id
+        }
+    })
+
+    // .map() the results from `departments` to question data for inquirer
+    const answers = await inquirer
+    .prompt([
+        {
+            type:"list",
+            name:"department_id",
+            message: "Choose a department",
+            choices: departmentChoices 
+        }
+    ])
+    .then((answers) => {
+        const { department_id } = answers
+
+        db.query(`SELECT d.name,
+        SUM(r.salary) AS total_budget
+        FROM department d
+        JOIN role r ON r.department_id = d.id
+        WHERE r.department_id = ?
+        GROUP BY d.name;`, [department_id], (err, result) => {
+            if (err) {
+                console.log(err);
+              }
+            console.table(result)
+            inquire()
+            });
+    })
+    
+};
 
 
 const quit = () => process.exit(1);
 
 inquire()
-
-
-// Write out static SQL query, and then swap in the question marks? to build them into our prompts ()
-
-/*
-Using Prepared Statements
-With MySQL2 you also get the prepared statements. With prepared statements MySQL doesn't have to prepare plan for same query everytime, this results in better performance. If you don't know why they are important, please check these discussions
-
-How prepared statements can protect from SQL Injection attacks
-MySQL provides execute helper which will prepare and query the statement. You can also manually prepare / unprepare statement with prepare / unprepare methods.
-
-// get the client
-const mysql = require('mysql2');
-
-// create the connection to database
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  database: 'test'
-});
-
-// execute will internally call prepare and query
-connection.execute(
-  'SELECT * FROM `table` WHERE `name` = ? AND `age` > ?',
-  ['Rick C-137', 53],
-  function(err, results, fields) {
-    console.log(results); // results contains rows returned by server
-    console.log(fields); // fields contains extra meta data about results, if available
-
-    // If you execute same statement again, it will be picked from a LRU cache
-    // which will save query preparation time and give better performance
-  }
-); */
