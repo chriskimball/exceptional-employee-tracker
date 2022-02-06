@@ -6,7 +6,7 @@ async function selectAllEmployees() {
     e.first_name, 
     e.last_name, 
     r.title, 
-    d.name,
+    d.name AS department_name,
     r.salary, 
     concat(m.first_name,' ', m.last_name) AS manager
     FROM employee e
