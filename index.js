@@ -101,20 +101,20 @@ async function viewEmployeesByManager() {
     const managerChoices = await getManagerChoices();
   
     const answers = await inquirer
-      .prompt([
+        .prompt([
         {
           type: "list",
           name: "manager_id",
           message: "Choose a manager",
           choices: managerChoices,
         },
-      ])
-      .then((answers) => {
-        const { manager_id } = answers;
-        selectEmployeesByManager(manager_id);
-  
-        setTimeout(() => {inquire();}, 100);
-      });
+        ])
+        .then((answers) => {
+            const { manager_id } = answers;
+            selectEmployeesByManager(manager_id);
+    
+            setTimeout(() => {inquire();}, 100);
+        });
 };
   
  // Function to view all employees by their department, returns table of all employees for the selected department.
@@ -143,20 +143,20 @@ async function viewDepartmentBudget() {
     const departmentChoices = await getDepartmentChoices();
   
     const answers = await inquirer
-      .prompt([
+        .prompt([
         {
-          type: "list",
-          name: "department_id",
-          message: "Choose a department",
-          choices: departmentChoices,
+            type: "list",
+            name: "department_id",
+            message: "Choose a department",
+            choices: departmentChoices,
         },
-      ])
-      .then((answers) => {
-        const { department_id } = answers;
-        selectDepartmentBudget(department_id);
-  
-        setTimeout(() => {inquire();}, 100);
-      });
+        ])
+        .then((answers) => {
+            const { department_id } = answers;
+            selectDepartmentBudget(department_id);
+    
+            setTimeout(() => {inquire();}, 100);
+        });
 };
   
  // Function to create a new department, inserts new department data into department table.
