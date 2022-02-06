@@ -76,11 +76,11 @@ async function selectAllDepartments() {
 // Function to return the utilized budget of a specific department.
 async function selectDepartmentBudget(department_id) {
   return db.query(`SELECT d.name,
-        SUM(r.salary) AS total_budget
-        FROM department d
-        JOIN role r ON r.department_id = d.id
-        WHERE r.department_id = ?
-        GROUP BY d.name;`,
+      SUM(r.salary) AS total_budget
+      FROM employee e
+      JOIN role r ON r.id = e.role_id
+      JOIN department d ON d.id = r.department_id
+      WHERE r.department_id = ?;`,
     [department_id],
     (err, result) => {
       if (err) {
