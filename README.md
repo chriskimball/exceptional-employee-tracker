@@ -76,7 +76,9 @@ When the `Quit` option is selected, the application will close.
 ---------------
 
 *  [Github Repository](https://github.com/chriskimball/exceptional-employee-tracker "Github Repo")
-*  [Walkthrough Demo](https://crk-super-note-taker.herokuapp.com/ "Walkthrough Demo")
+*  [Walkthrough Demo Part 1](https://watch.screencastify.com/v/XYOQikJNTyj5ReGUWF8n "Walkthrough Demo Part 1")
+*  [Walkthrough Demo Part 2](https://watch.screencastify.com/v/7oiAT26zjX2QRWqbeB0x "Walkthrough Demo Part 2")
+*  [Walkthrough Demo Part 3](https://watch.screencastify.com/v/W583EGifSsnLemEzytuF "Walkthrough Demo Part 3")
 
 
 ## Installation
